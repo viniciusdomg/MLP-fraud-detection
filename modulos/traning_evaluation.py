@@ -20,10 +20,6 @@ def iniciar_experimentos():
     # 1. CARREGAMENTO E LIMPEZA INICIAL
     # ==========================================
     df = dl.carregar_dados_amostra()
-    
-    # Removendo colunas que não ajudam na predição e podem causar explosão de memória
-    colunas_para_remover = ["nameOrig", "nameDest", "isFlaggedFraud"]
-    df = df.drop(columns=[col for col in colunas_para_remover if col in df.columns])
 
     X = df.drop("isFraud", axis=1)
     y = df["isFraud"]
@@ -32,21 +28,28 @@ def iniciar_experimentos():
     # 2. HOLDOUT (Separando 20% para teste final)
     # ==========================================
     X_train_full, X_test, y_train_full, y_test = train_test_split(
-        X, y, test_size=0.20, stratify=y, random_state=dl.SEED
+        X, 
+        y, 
+        test_size=0.20, 
+        stratify=y, 
+        random_state=dl.SEED
     )
 
-    # ==========================================
-    # 3. CONFIGURANDO O GRID SEARCH E K-FOLD
-    # ==========================================
-    neuronios_opcoes = [10, 32, 64]
-    taxas_opcoes = [0.01, 0.005, 0.001]
-    combinacoes = list(itertools.product(neuronios_opcoes, taxas_opcoes))
+    # K-FOLD
 
-    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=dl.SEED)
+    skf = StratifiedKFold(
+        n_splits=5, 
+        shuffle=True, 
+        random_state=dl.SEED
+    )
 
     # ==========================================
     # 4. LOOP DOS EXPERIMENTOS (9 Combinações)
     # ==========================================
+    neuronios_opcoes = [10, 32, 64]
+    taxas_opcoes = [0.01, 0.005, 0.001]
+    combinacoes = list(itertools.product(neuronios_opcoes, taxas_opcoes))
+    
     for neuronios, lr in combinacoes:
         print(f"\n[{neuronios} Neurônios | LR: {lr}]")
         
