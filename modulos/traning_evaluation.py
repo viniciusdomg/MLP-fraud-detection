@@ -17,9 +17,7 @@ def iniciar_experimentos():
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Iniciando experimentos no dispositivo: {DEVICE}")
 
-    # ==========================================
-    # 1. CARREGAMENTO E LIMPEZA INICIAL
-    # ==========================================
+    # CARREGAMENTO
     df = dl.carregar_dados_amostra()
 
     X = df.drop("isFraud", axis=1)
