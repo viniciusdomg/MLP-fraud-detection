@@ -4,8 +4,8 @@ import os
 MATRICULA = 20230013651
 SEED = (MATRICULA % 32) - 1 
 
-ARQUIVO_ORIGINAL = "../paysim.csv"
-ARQUIVO_AMOSTRA = "../paysim_sample.csv"
+ARQUIVO_ORIGINAL = "paysim.csv"
+ARQUIVO_AMOSTRA = "paysim_sample.csv"
 
 def gerar_amostra_paysim():
     """

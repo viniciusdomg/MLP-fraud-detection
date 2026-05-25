@@ -1,4 +1,3 @@
-import torch
 import copy
 
 class EarlyStopping:

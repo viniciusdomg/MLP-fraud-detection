@@ -8,10 +8,10 @@ from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score;
 
 # Importando seus módulos locais
-import data_loader as dl
-import preprocessing as pp
-from MLP_network import MLPBinaria
-from utils import EarlyStopping
+import modulos.data_loader as dl
+import modulos.preprocessing as pp
+from modulos.MLP_network import MLPBinaria
+from modulos.utils import EarlyStopping
 
 def iniciar_experimentos():
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -79,7 +79,7 @@ def iniciar_experimentos():
             # ==========================================
             # 5. O SEU MOTOR DE TREINAMENTO AQUI
             # ==========================================
-            model = MLPBinaria(input_dim=X_train_processed.shape[1], hidden_neurons=neuronios).to(DEVICE)
+            model = MLPBinaria(input_dim=X_train_processed.shape[1], hidden_dim=neuronios).to(DEVICE)
             criterion = nn.BCEWithLogitsLoss()
             optimizer = optim.SGD(model.parameters(), lr=lr)
             early_stopper = EarlyStopping(patience=15)
