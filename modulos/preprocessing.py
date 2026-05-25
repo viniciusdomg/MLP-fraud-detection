@@ -28,8 +28,7 @@ def criar_pipeline_pre_processamento():
     e transformação One-Hot.
     """
     
-    # Separamos as features pelo tipo. 
-    # NOTA: Não incluímos 'nameOrig', 'nameDest', e 'isFlaggedFraud' pois elas 
+    # Não incluímos 'nameOrig', 'nameDest', e 'isFlaggedFraud' pois elas 
     # devem ser descartadas antes de passar pelo pipeline para evitar ruído e explosão de memória.
     atributos_numericos = [
         "step", "amount", "oldbalanceOrg", "newbalanceOrig", 
