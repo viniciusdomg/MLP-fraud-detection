@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -58,6 +60,8 @@ def iniciar_experimentos():
 
         metricas_folds = {'acc': [], 'prec': [], 'rec': [], 'f1': []}
         
+        inicio_tempo = time.time()
+
         fold = 1
         for train_idx, val_idx in skf.split(X_train_full, y_train_full):
             print(f"  -> Treinando Fold {fold}...")
@@ -81,15 +85,15 @@ def iniciar_experimentos():
             train_loader = DataLoader(TensorDataset(X_train_tensor, y_train_tensor), batch_size=32, shuffle=True)
             val_loader = DataLoader(TensorDataset(X_val_tensor, y_val_tensor), batch_size=32, shuffle=False)
 
-            # ==========================================
-            # 5. O SEU MOTOR DE TREINAMENTO AQUI
-            # ==========================================
+            # TREINAMENTO
             model = MLPBinaria(input_dim=X_train_processed.shape[1], hidden_dim=neuronios).to(DEVICE)
             criterion = nn.BCEWithLogitsLoss()
             optimizer = optim.SGD(model.parameters(), lr=lr)
             early_stopper = EarlyStopping(patience=15)
 
-            for epoch in range(300): # Máximo de 300 épocas
+            epoca_parada = 300
+
+            for epoch in range(300):
                 model.train()
                 for X_batch, y_batch in train_loader:
                     X_batch, y_batch = X_batch.to(DEVICE), y_batch.to(DEVICE).unsqueeze(1)
@@ -113,6 +117,7 @@ def iniciar_experimentos():
                 # Checagem do Early Stopping
                 early_stopper(val_loss_media, model)
                 if early_stopper.early_stop:
+                    epoca_parada = epoch + 1
                     # modelo recupera os melhores pesos
                     model.load_state_dict(early_stopper.best_model_weights)
                     break
@@ -134,20 +139,26 @@ def iniciar_experimentos():
             metricas_folds['prec'].append(prec)
             metricas_folds['rec'].append(rec)
             metricas_folds['f1'].append(f1)
+            metricas_folds['epocas_convergencia'].append(epoca_parada)
             
-            print(f"  -> Fold {fold} Finalizado | F1-Score: {f1:.4f} | Acurácia: {acc:.4f}")
-            # (Aqui depois vamos adicionar a coleta das métricas: F1, Accuracy, etc)
+            print(f"  -> Fold {fold} Finalizado na época {epoca_parada} | F1-Score: {f1:.4f} | Acurácia: {acc:.4f}")
             fold += 1
         
+        fim_tempo = time.time()
+        tempo_total = fim_tempo - inicio_tempo
+
         f1_medio = np.mean(metricas_folds['f1'])
         acc_media = np.mean(metricas_folds['acc'])
         prec_media = np.mean(metricas_folds['prec'])
         rec_medio = np.mean(metricas_folds['rec'])
+        epocas_media = np.mean(metricas_folds['epocas_convergencia'])
         
         print(f"\nRESULTADO MÉDIO DA CONFIGURAÇÃO [{neuronios} Neurônios | LR: {lr}]:")
         print(f"F1-Score Médio: {f1_medio:.4f}")
         print(f"Acurácia Média: {acc_media:.4f}")
-        
+        print(f"Épocas médias até convergência: {epocas_media:.1f}")
+        print(f"Tempo Total (5 Folds): {tempo_total:.2f} segundos")
+
         # Guarda no placar geral para depois acharmos o campeão
         resultados_finais.append({
             'neuronios': neuronios,
@@ -155,14 +166,25 @@ def iniciar_experimentos():
             'f1': f1_medio,
             'acc': acc_media,
             'prec': prec_media,
-            'rec': rec_medio
+            'rec': rec_medio,
+            'epocas_convergencia': epocas_media,
+            'tempo_total': tempo_total
         })
     
     resultados_finais.sort(key=lambda x: x['f1'], reverse=True)
     melhor_config = resultados_finais[0]
+
+    print("\nSalvando log de experimentos...")
+    # Verifica se existe a pasta
+    os.makedirs("resultados", exist_ok=True) 
+    # Cria arquivos com data e hora atual
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    caminho_csv = f"resultados/log_{timestamp}.csv"
+
+    df_resultados = pd.DataFrame(resultados_finais)
+    df_resultados.to_csv(caminho_csv, index=False)
     
-    print("\n" + "="*50)
+    print("\n")
     print("BUSCA EM GRADE CONCLUÍDA!")
     print(f"MELHOR CONFIGURAÇÃO: {melhor_config['neuronios']} Neurônios com LR de {melhor_config['lr']}")
     print(f"F1-Score: {melhor_config['f1']:.4f}")
-    print("="*50)
