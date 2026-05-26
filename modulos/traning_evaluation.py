@@ -1,13 +1,18 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import itertools
-import numpy as np
 from torch.utils.data import TensorDataset, DataLoader
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score;
 
-# Importando seus módulos locais
+import itertools
+import os
+import time
+
+import pandas as pd
+import numpy as np
+
+# Módulos
 import modulos.data_loader as dl
 import modulos.preprocessing as pp
 from modulos.MLP_network import MLPBinaria

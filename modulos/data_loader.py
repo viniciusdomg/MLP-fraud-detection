@@ -8,11 +8,6 @@ ARQUIVO_ORIGINAL = "paysim.csv"
 ARQUIVO_AMOSTRA = "paysim_sample.csv"
 
 def gerar_amostra_paysim():
-    """
-    Lê a base original de dados, extrai 500 instâncias de fraude e 2500 
-    instâncias normais utilizando a matrícula do aluno como semente, e 
-    salva a amostra em um novo arquivo CSV.
-    """
     print(f"Iniciando amostragem com semente (seed): {SEED}...")
     
     # Verifica se o arquivo original existe no diretório atual
@@ -37,10 +32,7 @@ def gerar_amostra_paysim():
     print(f"Total de instâncias: {len(amostra)} (500 fraudes, 2500 normais).")
 
 def carregar_dados_amostra():
-    """
-    Verifica se a amostra já existe. Se não, gera a amostra.
-    Retorna o DataFrame pronto para ser enviado ao pipeline de pré-processamento.
-    """
+    # Verifica se a amostra já existe.
     if not os.path.exists(ARQUIVO_AMOSTRA):
         gerar_amostra_paysim()
     

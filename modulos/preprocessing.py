@@ -55,7 +55,7 @@ def criar_pipeline_pre_processamento():
             ("num", pipeline_numerico, atributos_numericos),
             ("cat", pipeline_categorico, atributos_categoricos)
         ],
-        remainder="drop" # Descarta qualquer coluna que não esteja nas listas acima automaticamente
+        remainder="drop" # Descarta as colunas não listadas (nameOrig, nameDest, isFlaggedFraud)
     )
 
     return preprocessador
