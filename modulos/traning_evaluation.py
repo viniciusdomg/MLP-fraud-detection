@@ -3,9 +3,10 @@ from datetime import datetime
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import matplotlib.pyplot as plt
 from torch.utils.data import TensorDataset, DataLoader
 from sklearn.model_selection import train_test_split, StratifiedKFold
-from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score;
+from sklearn.metrics import confusion_matrix, f1_score, accuracy_score, precision_score, recall_score;
 
 import itertools
 import os
@@ -19,6 +20,123 @@ import modulos.data_loader as dl
 import modulos.preprocessing as pp
 from modulos.MLP_network import MLPBinaria
 from modulos.utils import EarlyStopping
+
+def teste_final():
+    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("\n" + "="*50)
+    print("INICIANDO FASE B: COMPARAÇÃO DE BATCHES E TESTE FINAL")
+    print("="*50)
+
+    # 1. Carregamento e Separação (Igual ao anterior)
+    df = dl.carregar_dados_amostra()
+    df = df.drop(columns=["nameOrig", "nameDest", "isFlaggedFraud"], errors="ignore")
+    X = df.drop("isFraud", axis=1)
+    y = df["isFraud"]
+
+    X_train_full, X_test, y_train_full, y_test = train_test_split(
+        X, y, test_size=0.20, stratify=y, random_state=dl.SEED
+    )
+
+    # 2. Pipeline Final (Treina com os 80% inteiros, aplica nos 20% do cofre)
+    pipeline = pp.criar_pipeline_pre_processamento()
+    X_train_processed = pipeline.fit_transform(X_train_full)
+    X_test_processed = pipeline.transform(X_test)
+
+    X_train_tensor = torch.tensor(X_train_processed, dtype=torch.float32)
+    y_train_tensor = torch.tensor(y_train_full.values, dtype=torch.float32)
+    X_test_tensor = torch.tensor(X_test_processed, dtype=torch.float32)
+    y_test_tensor = torch.tensor(y_test.values, dtype=torch.float32)
+
+    # 3. Configuração
+    NEURONIOS = 10
+    LR = 0.05
+    MOMENTUM = 0.9
+    EPOCHS = 150
+
+    # 4. Estratégias de gradiente
+    estrategias_batch = {
+        "Batch (Full)": len(X_train_tensor),
+        "Mini-batch (64)": 64,
+        "Mini-batch (32)": 32,
+        "Stochastic (SGD Puro)": 1
+    }
+
+    resultados_batches = []
+    historico_losses = {} # Para plotar o gráfico depois
+
+    for nome_estrategia, tamanho_batch in estrategias_batch.items():
+        print(f"\n-> Testando Estratégia: {nome_estrategia} (Lote: {tamanho_batch})")
+        
+        train_loader = DataLoader(TensorDataset(X_train_tensor, y_train_tensor), batch_size=tamanho_batch, shuffle=True)
+        
+        model = MLPBinaria(input_dim=X_train_processed.shape[1], hidden_dim=NEURONIOS).to(DEVICE)
+        criterion = nn.BCEWithLogitsLoss()
+        optimizer = optim.SGD(model.parameters(), lr=LR, momentum=MOMENTUM)
+        
+        inicio_tempo = time.time()
+        losses_desta_estrategia = []
+
+        model.train()
+        for epoch in range(EPOCHS):
+            train_loss_total = 0.0
+            for X_batch, y_batch in train_loader:
+                X_batch, y_batch = X_batch.to(DEVICE), y_batch.to(DEVICE).unsqueeze(1)
+                optimizer.zero_grad()
+                outputs = model(X_batch)
+                loss = criterion(outputs, y_batch)
+                loss.backward()
+                optimizer.step()
+                train_loss_total += loss.item()
+            
+            # Guarda o loss médio da época para o gráfico
+            losses_desta_estrategia.append(train_loss_total / len(train_loader))
+
+        fim_tempo = time.time()
+        historico_losses[nome_estrategia] = losses_desta_estrategia
+        
+        # Teste Final no Holdout (O Cofre)
+        model.eval()
+        with torch.no_grad():
+            test_logits = model(X_test_tensor.to(DEVICE))
+            test_predictions = (test_logits > 0).float().cpu().numpy()
+            y_test_true = y_test_tensor.cpu().numpy()
+
+        acc = accuracy_score(y_test_true, test_predictions)
+        f1 = f1_score(y_test_true, test_predictions, zero_division=0)
+        
+        tempo_gasto = fim_tempo - inicio_tempo
+        print(f"   Tempo: {tempo_gasto:.2f}s | F1-Score: {f1:.4f} | Acurácia: {acc:.4f}")
+        
+        resultados_batches.append({
+            'Estrategia': nome_estrategia,
+            'Tempo_s': tempo_gasto,
+            'F1_Score': f1,
+            'Accuracy': acc
+        })
+
+        # Salva a matriz de confusão da melhor estratégia esperada (Mini-batch)
+        if tamanho_batch == 32:
+            matriz_confusao = confusion_matrix(y_test_true, test_predictions)
+            print("\nMatriz de Confusão (Mini-batch 32):")
+            print(matriz_confusao)
+
+    # 5. Exportar Resultados dos Batches para CSV
+    df_batches = pd.DataFrame(resultados_batches)
+    df_batches.to_csv("resultados/comparacao_batches.csv", index=False)
+    print("\nResultados das estratégias salvos em 'resultados/comparacao_batches.csv'")
+
+    # 6. Gerar o Gráfico de Convergência das Estratégias
+    plt.figure(figsize=(10, 6))
+    for nome_estrategia, losses in historico_losses.items():
+        plt.plot(losses, label=nome_estrategia)
+    
+    plt.title("Evolução do Erro (Loss) por Estratégia de Gradiente")
+    plt.xlabel("Épocas")
+    plt.ylabel("Loss (Entropia Cruzada Binária)")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig("resultados/grafico_estrategias_batch.png")
+    print("Gráfico de convergência salvo em 'resultados/grafico_estrategias_batch.png'")
 
 def iniciar_experimentos():
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -49,8 +167,8 @@ def iniciar_experimentos():
 
     # LOOP DOS EXPERIMENTOS (9 Combinações)
     
-    neuronios_opcoes = [10, 32, 64]
-    taxas_opcoes = [0.03, 0.05, 0.1]
+    neuronios_opcoes = [10, 64, 128]
+    taxas_opcoes = [0.001, 0.05, 0.1]
     combinacoes = list(itertools.product(neuronios_opcoes, taxas_opcoes))
 
     resultados_finais = []
