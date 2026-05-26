@@ -23,9 +23,7 @@ from modulos.utils import EarlyStopping
 
 def teste_final():
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print("\n" + "="*50)
-    print("INICIANDO FASE B: COMPARAÇÃO DE BATCHES E TESTE FINAL")
-    print("="*50)
+    print("COMPARAÇÃO DE BATCHES E TESTE FINAL")
 
     # 1. Carregamento e Separação (Igual ao anterior)
     df = dl.carregar_dados_amostra()

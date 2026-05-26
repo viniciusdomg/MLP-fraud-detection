@@ -3,7 +3,7 @@
 import modulos.traning_evaluation as te;
 
 def run():
-    te.iniciar_experimentos()
+    te.teste_final()
 
 if __name__ == "__main__": 
     
