@@ -50,7 +50,7 @@ def iniciar_experimentos():
     # LOOP DOS EXPERIMENTOS (9 Combinações)
     
     neuronios_opcoes = [10, 32, 64]
-    taxas_opcoes = [0.01, 0.005, 0.001]
+    taxas_opcoes = [0.03, 0.05, 0.1]
     combinacoes = list(itertools.product(neuronios_opcoes, taxas_opcoes))
 
     resultados_finais = []
@@ -88,7 +88,7 @@ def iniciar_experimentos():
             # TREINAMENTO
             model = MLPBinaria(input_dim=X_train_processed.shape[1], hidden_dim=neuronios).to(DEVICE)
             criterion = nn.BCEWithLogitsLoss()
-            optimizer = optim.SGD(model.parameters(), lr=lr)
+            optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
             early_stopper = EarlyStopping(patience=15)
 
             epoca_parada = 300
