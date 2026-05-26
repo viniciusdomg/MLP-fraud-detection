@@ -188,3 +188,8 @@ def iniciar_experimentos():
     print("BUSCA EM GRADE CONCLUÍDA!")
     print(f"MELHOR CONFIGURAÇÃO: {melhor_config['neuronios']} Neurônios com LR de {melhor_config['lr']}")
     print(f"F1-Score: {melhor_config['f1']:.4f}")
+    print(f"Acurácia: {melhor_config['acc']:.4f}")
+    print(f"Precisão: {melhor_config['prec']:.4f}")
+    print(f"Revocação: {melhor_config['rec']:.4f}")
+    print(f"Épocas médias até convergência: {melhor_config['epocas_convergencia']:.1f}")
+    print(f"Tempo Total: {melhor_config['tempo_total']:.2f} segundos")
