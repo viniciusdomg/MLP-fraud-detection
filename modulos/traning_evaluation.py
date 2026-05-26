@@ -113,10 +113,13 @@ def teste_final():
         })
 
         # Salva a matriz de confusão da melhor estratégia esperada (Mini-batch)
-        if tamanho_batch == 32:
-            matriz_confusao = confusion_matrix(y_test_true, test_predictions)
-            print("\nMatriz de Confusão (Mini-batch 32):")
-            print(matriz_confusao)
+        if f1 > melhor_f1_fase_b:
+            melhor_f1_fase_b = f1
+            nome_melhor_estrategia = nome_estrategia
+            melhor_matriz_confusao = confusion_matrix(y_test_true, test_predictions)
+
+    print(f"MATRIZ DE CONFUSÃO DA MELHOR ESTRATÉGIA: {nome_melhor_estrategia}")
+    print(melhor_matriz_confusao)
 
     # 5. Exportar Resultados dos Batches para CSV
     df_batches = pd.DataFrame(resultados_batches)
