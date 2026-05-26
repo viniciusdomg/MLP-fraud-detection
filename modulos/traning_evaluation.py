@@ -55,8 +55,8 @@ def iniciar_experimentos():
 
     resultados_finais = []
 
-    for neuronios, lr in combinacoes:
-        print(f"\n[{neuronios} Neurônios | LR: {lr}]")
+    for neuronios, taxa in combinacoes:
+        print(f"\n[{neuronios} Neurônios | Taxa aprendizado: {taxa}]")
 
         metricas_folds = {'acc': [], 'prec': [], 'rec': [], 'f1': [], 'epocas_convergencia': []}
         
@@ -88,7 +88,7 @@ def iniciar_experimentos():
             # TREINAMENTO
             model = MLPBinaria(input_dim=X_train_processed.shape[1], hidden_dim=neuronios).to(DEVICE)
             criterion = nn.BCEWithLogitsLoss()
-            optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+            optimizer = optim.SGD(model.parameters(), lr=taxa, momentum=0.9)
             early_stopper = EarlyStopping(patience=15)
 
             epoca_parada = 300
@@ -153,7 +153,7 @@ def iniciar_experimentos():
         rec_medio = np.mean(metricas_folds['rec'])
         epocas_media = np.mean(metricas_folds['epocas_convergencia'])
         
-        print(f"\nRESULTADO MÉDIO DA CONFIGURAÇÃO [{neuronios} Neurônios | LR: {lr}]:")
+        print(f"\nRESULTADO MÉDIO DA CONFIGURAÇÃO [{neuronios} Neurônios | Taxa aprendizado: {taxa}]:")
         print(f"F1-Score Médio: {f1_medio:.4f}")
         print(f"Acurácia Média: {acc_media:.4f}")
         print(f"Épocas médias até convergência: {epocas_media:.1f}")
@@ -162,7 +162,7 @@ def iniciar_experimentos():
         # Guarda no placar geral para depois acharmos o campeão
         resultados_finais.append({
             'neuronios': neuronios,
-            'lr': lr,
+            'taxa_aprendizado': taxa,
             'f1': f1_medio,
             'acc': acc_media,
             'prec': prec_media,
@@ -186,7 +186,7 @@ def iniciar_experimentos():
     
     print("\n")
     print("BUSCA EM GRADE CONCLUÍDA!")
-    print(f"MELHOR CONFIGURAÇÃO: {melhor_config['neuronios']} Neurônios com LR de {melhor_config['lr']}")
+    print(f"MELHOR CONFIGURAÇÃO: {melhor_config['neuronios']} Neurônios com Taxa de Aprendizado de {melhor_config['taxa_aprendizado']}")
     print(f"F1-Score: {melhor_config['f1']:.4f}")
     print(f"Acurácia: {melhor_config['acc']:.4f}")
     print(f"Precisão: {melhor_config['prec']:.4f}")
