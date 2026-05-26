@@ -58,7 +58,7 @@ def iniciar_experimentos():
     for neuronios, lr in combinacoes:
         print(f"\n[{neuronios} Neurônios | LR: {lr}]")
 
-        metricas_folds = {'acc': [], 'prec': [], 'rec': [], 'f1': []}
+        metricas_folds = {'acc': [], 'prec': [], 'rec': [], 'f1': [], 'epocas_convergencia': []}
         
         inicio_tempo = time.time()
 
