@@ -28,3 +28,23 @@ class EarlyStopping:
             self.best_loss = val_loss
             self.best_model_weights = copy.deepcopy(model.state_dict())
             self.counter = 0 # Reseta o contador
+
+"""
+COMPARAÇÃO DE BATCHES E TESTE FINAL - Melhor teste da vida
+
+-> Testando Estratégia: Batch (Full) (Lote: 2400)
+   Tempo: 2.35s | F1-Score: 0.6951 | Acurácia: 0.9167
+
+-> Testando Estratégia: Mini-batch (64) (Lote: 64)
+   Tempo: 4.47s | F1-Score: 0.9053 | Acurácia: 0.9700
+
+-> Testando Estratégia: Mini-batch (32) (Lote: 32)
+   Tempo: 7.11s | F1-Score: 0.8852 | Acurácia: 0.9650
+
+-> Testando Estratégia: Stochastic (SGD Puro) (Lote: 1)
+   Tempo: 171.17s | F1-Score: 0.0000 | Acurácia: 0.8333
+MATRIZ DE CONFUSÃO DA MELHOR ESTRATÉGIA: Mini-batch (64)
+[[496   4]
+ [ 14  86]]
+
+"""
