@@ -1,12 +1,12 @@
 import copy
 
 class EarlyStopping:
-    def __init__(self, patience=10, min_delta=0):
+    def __init__(self, parada=10, min_delta=0):
         """
-        patience: Quantas épocas esperar após a última melhoria antes de parar.
+        parada: Quantas épocas esperar após a última melhoria antes de parar.
         min_delta: Diferença mínima para ser considerada uma melhoria.
         """
-        self.patience = patience
+        self.parada = parada
         self.min_delta = min_delta
         self.counter = 0
         self.best_loss = None
@@ -21,7 +21,7 @@ class EarlyStopping:
         # Se a perda atual não melhorou em relação à melhor perda
         elif val_loss > self.best_loss - self.min_delta:
             self.counter += 1
-            if self.counter >= self.patience:
+            if self.counter >= self.parada:
                 self.early_stop = True
         # Se a perda melhorou
         else:

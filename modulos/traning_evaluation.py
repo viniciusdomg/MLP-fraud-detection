@@ -61,6 +61,9 @@ def teste_final():
 
     resultados_batches = []
     historico_losses = {} # Para plotar o gráfico depois
+    melhor_f1_fase_b = -1
+    melhor_matriz_confusao = None
+    nome_melhor_estrategia = ""
 
     for nome_estrategia, tamanho_batch in estrategias_batch.items():
         print(f"\n-> Testando Estratégia: {nome_estrategia} (Lote: {tamanho_batch})")
